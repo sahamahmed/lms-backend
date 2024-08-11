@@ -39,35 +39,46 @@ try {
 
 export const editCourse = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const data = req.body
-        const courseId = req.params.id
-        const thumbnail = data.thumbnail
-        if (thumbnail) {
-            await cloudinary.v2.uploader.destroy(thumbnail.public_id)
+        const data = req.body;
+        const courseId = req.params.id;
+        let thumbnail = data.thumbnail;
+
+        // Check if thumbnail is an object and has a `public_id`
+        // if (thumbnail && typeof thumbnail === 'object' && thumbnail.public_id) {
+        //     // Destroy the old image
+        //     await cloudinary.v2.uploader.destroy(thumbnail.public_id);
+        // }
+
+        // If thumbnail is a string (e.g., a path to a new image), upload it
+        if (typeof thumbnail === 'string') {
             const myCloud = await cloudinary.v2.uploader.upload(thumbnail, {
                 folder: "courses",
-            })
+            });
+
+            console.log(myCloud)
 
             data.thumbnail = {
                 public_id: myCloud.public_id,
                 url: myCloud.secure_url,
-            }
+            };
         }
 
+        // Update the course with the new data
         const course = await Course.findByIdAndUpdate(
             courseId,
-            { $set: data},
-            { new: true,}
-            )
+            { $set: data },
+            { new: true }
+        );
 
-            res.status(200).json({
-                success: true,
-                course,
-            })
+        res.status(200).json({
+            success: true,
+            course,
+        });
     } catch (error) {
-        return next(new ErrorHandler(error.message, 500))
+        return next(new ErrorHandler(error.message, 500));
     }
-})
+});
+
 
 //WHEN USER HAS NOT PURCHASED THE COURSE
 export const getSingleCourse = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
@@ -436,6 +447,26 @@ export const deleteCourse = asyncHandler(async (req: Request, res: Response, nex
             success: true,
             message: "Course deleted successfully"
         })
+    } catch (error) {
+        return next(new ErrorHandler(error.message, 500))
+    }
+})
+
+
+
+export const getSingleCourseForAdmin = asyncHandler(async (req: Request & { user: IUser }, res: Response, next: NextFunction) => {
+    try {
+        const userCourses = req.user.courses
+        const courseId = req.params.id
+
+
+        const course = await Course.findById(courseId)
+
+        res.status(200).json({
+            success: true,
+            course,
+        })
+
     } catch (error) {
         return next(new ErrorHandler(error.message, 500))
     }

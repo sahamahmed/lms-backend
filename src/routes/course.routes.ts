@@ -5,13 +5,16 @@ import {
   addReplyToReview,
   addReview,
   deleteCourse,
+  editCourse,
   getAllCourses,
   getAllCoursesForAdmin,
   getSingleCourse,
+  getSingleCourseForAdmin,
   getSingleCourseForUser,
   uploadCourse,
 } from "../controllers/course.controller.ts";
 import { authorizeRoles, isAuthenticated } from "../middleware/auth.ts";
+import { updateAccessToken } from "../controllers/user.controller.ts";
 
 const courseRouter = Router();
 
@@ -21,7 +24,7 @@ courseRouter.put(
   "/edit-course/:id",
   isAuthenticated,
   authorizeRoles("admin"),  
-  uploadCourse
+  editCourse
 );
 
 courseRouter.get(
@@ -30,7 +33,7 @@ courseRouter.get(
 );
 
 courseRouter.get("/get-courses", getAllCourses);
-courseRouter.get("/get-course-content/:id", isAuthenticated ,getSingleCourseForUser);
+courseRouter.get("/get-content/:id", isAuthenticated ,getSingleCourseForUser);
 
 courseRouter.put("/add-question", isAuthenticated, addQuestion);
 courseRouter.put("/add-answer", isAuthenticated, addAnswer);
@@ -40,6 +43,7 @@ courseRouter.put("/add-reply", isAuthenticated,authorizeRoles("admin"), addReply
 
 courseRouter.get("/get-all-courses",isAuthenticated, authorizeRoles("admin"), getAllCoursesForAdmin);
 courseRouter.delete("/delete-course/:id",isAuthenticated, authorizeRoles("admin"), deleteCourse);
+courseRouter.get("/get-course-content/:id", isAuthenticated, authorizeRoles("admin"), getSingleCourseForAdmin);
 
 
 export default courseRouter

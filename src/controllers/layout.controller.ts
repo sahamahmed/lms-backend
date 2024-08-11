@@ -12,11 +12,13 @@ export const createLayout = asyncHandler(async (req: Request, res: Response, nex
         if(typeExists){
             return next(new ErrorHandler(`${type} Layout already exists`, 400))
         }
+
         if (type === "Banner") {
             const {image, title, subTitle} = req.body
             if(!image || !title || !subTitle){
                 return next(new ErrorHandler('Please provide all the fields', 400))
             }
+
 
             const cloudinaryImage = await cloudinary.v2.uploader.upload(image, {
                 folder: 'layout'
@@ -63,25 +65,32 @@ export const editLayout = asyncHandler(async (req: Request, res: Response, next:
     try {
          const {type} = req.body
         if (type === "Banner") {
-            const {image, title, subTitle} = req.body
+            let {image, title, subTitle} = req.body
             const bannerData: any = await Layout.findOne({type: "Banner"})
             if(!image || !title || !subTitle){
                 return next(new ErrorHandler('Please provide all the fields', 400))
             }
 
-            await cloudinary.v2.uploader.destroy(bannerData.banner.image.public_id)
 
-            const cloudinaryImage = await cloudinary.v2.uploader.upload(image, {
-                folder: 'layout'
-            })
+            if (typeof image === 'string'){
+                await cloudinary.v2.uploader.destroy(bannerData.banner.image.public_id)
+
+                const cloudinaryImage = await cloudinary.v2.uploader.upload(image, {
+                    folder: 'layout'
+                })
+
+                    image = {
+                        public_id: cloudinaryImage.public_id,
+                        url: cloudinaryImage.secure_url
+                    }
+            }
+
             const banner = {
-                image: {
-                    public_id: cloudinaryImage.public_id,
-                    url: cloudinaryImage.secure_url
-                },
+                image,
                 title,
                 subTitle
             }
+      
             await Layout.findByIdAndUpdate(bannerData._id ,{type, banner})
             
         }
@@ -117,7 +126,7 @@ export const editLayout = asyncHandler(async (req: Request, res: Response, next:
 //get layout by type
 export const getLayoutByType = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const {type} = req.body
+        const {type} = req.params
         const layout = await Layout.findOne({type})
         if(!layout){
             return next(new ErrorHandler(`No layout found for ${type}`, 404))
