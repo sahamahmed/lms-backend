@@ -35,6 +35,7 @@ interface ICourse extends Document {
   _id?: mongoose.Schema.Types.ObjectId 
     name: string
     description: string
+    categories:string
     price: number
     estimatedPrice?: number
     thumbnail?: {
@@ -94,6 +95,10 @@ const courseSchema: mongoose.Schema<ICourse> = new mongoose.Schema<ICourse>(
       required: true,
     },
     description: {
+      type: String,
+      required: true,
+    },
+    categories: {
       type: String,
       required: true,
     },

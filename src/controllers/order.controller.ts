@@ -86,11 +86,53 @@ export const createOrder = asyncHandler(async (req: Request & {user: IUser}, res
 })
 
 // ADMIN ROUTES
-
 export const getAllOrdersForAdmin = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
   try {
     
-    const orders = await Order.find().sort({createdAt: -1})
+    const orders = await Order.aggregate([
+        {$match: {}},
+        {$sort: {createdAt: -1}},
+        {
+            $lookup: {
+                from: 'users',
+                localField: 'userId',
+                foreignField: '_id',
+                as: 'user',
+                pipeline: [
+                    {
+                        $project: {
+                            email: 1,
+                            name: 1,
+                            _id : 1
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            $lookup: {
+                from: 'courses',
+                localField: 'courseId',
+                foreignField: '_id',
+                as: 'course',
+                pipeline: [
+                    {
+                        $project: {
+                            name: 1,
+                            price: 1,
+                            _id : 1
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            $addFields: {
+                user: { $arrayElemAt: ['$user', 0] },
+                course: { $arrayElemAt: ['$course', 0] }
+            }
+        }
+    ])
     res.status(200).json({
       success: true,
       orders
