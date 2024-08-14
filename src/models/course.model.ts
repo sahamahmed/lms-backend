@@ -100,7 +100,6 @@ const courseSchema: mongoose.Schema<ICourse> = new mongoose.Schema<ICourse>(
     },
     categories: {
       type: String,
-      required: true,
     },
     price: {
       type: Number,

@@ -10,10 +10,29 @@ import path from "path";
 import sendMail from "../utils/sendMail.ts";
 import mongoose from "mongoose";
 import Notification from "../models/notification.model.ts";
+import { redis } from "../utils/redis.ts";
+
+// Importing Stripe using ES modules
+import Stripe from 'stripe';
+
+// Initialize Stripe with your secret key
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 export const createOrder = asyncHandler(async (req: Request & {user: IUser}, res:Response, next:NextFunction) => {
     try {
         const {courseId, paymentInfo} = req.body as IOrder
+
+        if (paymentInfo) {
+            if ("id" in paymentInfo) {
+                const paymentIntentId:string = paymentInfo.id as string 
+                const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId)
+
+                if (paymentIntent.status !== 'succeeded') {
+                    return next(new ErrorHandler("Payment not successful", 400))
+                    
+                }
+            }
+        }
 
         const user = await User.findById(req.user._id)
 
@@ -61,6 +80,8 @@ export const createOrder = asyncHandler(async (req: Request & {user: IUser}, res
         }
 
     user.courses.push({ courseId: course._id });
+
+    await redis.set(req?.user?._id , JSON.stringify(user))
 
     await user.save()
 
@@ -141,3 +162,51 @@ export const getAllOrdersForAdmin = asyncHandler(async (req: Request, res: Respo
     return next(new ErrorHandler(error.message, 500));
   }
 })
+
+
+
+
+export const sendStripePublishableKey = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+    res.status(200).json({
+        success: true,
+        publishableKey: process.env.STRIPE_PUBLISHABLE_KEY
+    })
+
+})
+
+export const newPayment = asyncHandler(async (req: Request & { user: IUser }, res: Response, next: NextFunction) => {
+    try {
+        const { amount } = req.body;
+        
+        const newPayment = await stripe.paymentIntents.create({
+            amount: amount,
+            currency: 'usd',
+            description: `Payment for course: `,
+            metadata: {
+                company: "E-Learning",
+            },
+            shipping: {
+                name: req.user.name,
+                address: {
+                    line1: 'customerAddress',
+                    line2: 'customerAddress2',
+                    postal_code: '12345',
+                    city: 'Delhi',
+                    state: 'Punjab',
+                    country: 'IN',
+
+                },
+            },
+            automatic_payment_methods: {
+                enabled: true
+            }
+        });
+
+        res.status(200).json({
+            success: true,
+            client_secret: newPayment.client_secret
+        });
+    } catch (error: any) {
+        return next(new ErrorHandler(error.message, 500));
+    }
+});
