@@ -241,6 +241,7 @@ interface IAddAnswerData{
     courseId: string
     contentId: string
 }
+
 export const addAnswer = asyncHandler(async (req: Request & {user: IUser}, res: Response, next: NextFunction) => {
     try {
         const {questionId, answer, courseId, contentId} = req.body as IAddAnswerData
@@ -272,6 +273,8 @@ export const addAnswer = asyncHandler(async (req: Request & {user: IUser}, res: 
         const newAnswer: any = {
           user: req.user,
           answer,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
         };
 
         question.questionReplies.push(newAnswer);
@@ -305,6 +308,12 @@ export const addAnswer = asyncHandler(async (req: Request & {user: IUser}, res: 
                 return next(new ErrorHandler(error.message, 500))
             }
         }
+
+        res.status(200).json({
+            success: true,
+            course,
+        })
+
 
     } catch (error) {
         return next(new ErrorHandler(error.message, 500))
@@ -352,13 +361,16 @@ export const addReview = asyncHandler(async (req: Request & {user:IUser}, res: R
         course.ratings = average / course.reviews.length
 
         await course.save()
+        await redis.set(courseId, JSON.stringify(course), "EX", 604800)
 
-        const notification ={
+        const notification = {
             title: "New message recieved",
-            message: `${req.user.name} has added a review to ${course.name}`
+            message: `${req.user.name} has added a review to ${course.name}`,
+            user: req.user._id
+
         }
 
-        //create notification later
+        await Notification.create(notification)
 
         res.status(200).json({
             success: true,
@@ -391,7 +403,9 @@ export const addReplyToReview = asyncHandler(async (req: Request & {user: IUser}
 
         const replyData: any = {
             user:req.user,
-            comment
+            comment,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
         }
 
         if (!review.commentReplies) {
@@ -400,6 +414,7 @@ export const addReplyToReview = asyncHandler(async (req: Request & {user: IUser}
 
         review.commentReplies.push(replyData)
         await course.save()
+        await redis.set(courseId, JSON.stringify(course), "EX", 604800)
 
         res.status(200).json({
             success: true,

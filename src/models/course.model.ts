@@ -1,5 +1,6 @@
 import mongoose, {Document} from 'mongoose';
 import { IUser } from './user.model';
+import { time } from 'console';
 
 export interface IComment extends Document {
   user: IUser;
@@ -59,7 +60,7 @@ const commentSchema: mongoose.Schema<IComment> = new mongoose.Schema<IComment>({
     user: Object,
     question: String,
     questionReplies: [Object]
-})
+}, {timestamps: true})
 
 const reviewSchema: mongoose.Schema<IReview> = new mongoose.Schema<IReview>({
     user: Object,
@@ -69,7 +70,7 @@ const reviewSchema: mongoose.Schema<IReview> = new mongoose.Schema<IReview>({
     },
     comment: String,
     commentReplies: [Object]
-})
+}, {timestamps: true})
 
 const linkSchema: mongoose.Schema<ILink> = new mongoose.Schema<ILink>({
     title: String,

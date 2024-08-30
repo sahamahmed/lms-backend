@@ -1,5 +1,4 @@
 import express, { NextFunction, Request, Response } from 'express';
-// import ErrorHandler from './utils/ErrorHandler.ts';
 import {ErrorMiddleware} from './middleware/error.ts';
 import cors from "cors";
 import cookieParser from "cookie-parser";
@@ -9,12 +8,14 @@ import orderRouter from './routes/order.routes.ts';
 import notificationRouter from './routes/notification.routes.ts';
 import analyticsRouter from './routes/analytics.routes.ts';
 import layoutRouter from './routes/layout.routes.ts';
-import ErrorHandler from './utils/ErrorHandler.ts';
 const app = express();
 
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN,
+    origin: [
+      'https://fe2d-2400-adc1-40c-3300-848e-2894-9222-b18e.ngrok-free.app',
+      'http://localhost:3000'
+    ],
     credentials: true,
   })
 );

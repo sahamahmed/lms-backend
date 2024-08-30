@@ -18,7 +18,7 @@ import { updateAccessToken } from "../controllers/user.controller.ts";
 
 const courseRouter = Router();
 
-courseRouter.post("/create-course", isAuthenticated, authorizeRoles("admin"), uploadCourse);
+courseRouter.post("/create-course", uploadCourse);
 
 courseRouter.put(
   "/edit-course/:id",
