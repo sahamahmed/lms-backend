@@ -55,6 +55,7 @@ export const registerUser = asyncHandler(
       const user: IRegisterUser = { name, email, password };
       const activationToken = createActivationToken(user);
       const activationCode = activationToken.activationCode;
+      console.log(activationCode)
 
       const data = { user: { name: user.name }, activationCode };
       const html = await ejs.renderFile(
@@ -106,7 +107,7 @@ export const activateUser = asyncHandler(
             };
 
             if (newUser.activationCode !== activationCode) {
-                return next(new ErrorHandler("Invalid activation token", 400));
+            return next(new ErrorHandler("Invalid activation token", 400));
             }
 
             const {name, email, password} = newUser.user

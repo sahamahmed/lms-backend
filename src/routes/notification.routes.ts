@@ -4,8 +4,8 @@ import { getNotifications, updateNotification } from "../controllers/notificatio
 
 const notificationRouter = Router();
 
-notificationRouter.get("/get-all-notifications", isAuthenticated, authorizeRoles("admin"), getNotifications);
-notificationRouter.put("/update-notification/:id", isAuthenticated, authorizeRoles("admin"), updateNotification);
+notificationRouter.get("/get-all-notifications", getNotifications);
+notificationRouter.put("/update-notification/:id", updateNotification);
 
 
 export default notificationRouter

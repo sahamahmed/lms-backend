@@ -51,7 +51,7 @@ interface ICourse extends Document {
     prerequisites: {title: string}[]
     reviews: IReview[]
     ratings: number
-    purchased?: number
+    purchased: number
 }
 
 

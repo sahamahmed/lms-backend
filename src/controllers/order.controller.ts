@@ -42,7 +42,7 @@ export const createOrder = asyncHandler(async (req: Request & {user: IUser}, res
             return next(new ErrorHandler("You already have purchased this course", 400))
         }
 
-        const course = await Course.findById(courseId)
+        const course: any = await Course.findById(courseId)
 
         if (!course) {
             return next(new ErrorHandler("Course not found", 404))
@@ -94,9 +94,10 @@ export const createOrder = asyncHandler(async (req: Request & {user: IUser}, res
         }
         )
 
-        course.purchased ?  course.purchased += 1 : course.purchased
+        course.purchased += 1
         
         await course.save()
+        await redis.set(course._id, JSON.stringify(course))
 
         newOrder(data, res, next)
 
