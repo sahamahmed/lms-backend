@@ -8,6 +8,7 @@ import {
   editCourse,
   getAllCourses,
   getAllCoursesForAdmin,
+  getMyCourses,
   getSingleCourse,
   getSingleCourseForAdmin,
   getSingleCourseForUser,
@@ -33,17 +34,18 @@ courseRouter.get(
 );
 
 courseRouter.get("/get-courses", getAllCourses);
-courseRouter.get("/get-content/:id", isAuthenticated ,getSingleCourseForUser);
+courseRouter.get("/get-my-courses", updateAccessToken, isAuthenticated, getMyCourses)
+courseRouter.get("/get-content/:id", updateAccessToken, isAuthenticated ,getSingleCourseForUser);
 
-courseRouter.put("/add-question", isAuthenticated, addQuestion);
-courseRouter.put("/add-answer", isAuthenticated, addAnswer);
-courseRouter.put("/add-review/:id", isAuthenticated, addReview);
-courseRouter.put("/add-reply", isAuthenticated,authorizeRoles("admin"), addReplyToReview);
+courseRouter.put("/add-question", updateAccessToken, isAuthenticated, addQuestion);
+courseRouter.put("/add-answer", updateAccessToken, isAuthenticated, addAnswer);
+courseRouter.put("/add-review/:id", updateAccessToken, isAuthenticated, addReview);
+courseRouter.put("/add-reply", updateAccessToken, isAuthenticated,authorizeRoles("admin"), addReplyToReview);
 
 
-courseRouter.get("/get-all-courses",isAuthenticated, authorizeRoles("admin"), getAllCoursesForAdmin);
-courseRouter.delete("/delete-course/:id",isAuthenticated, authorizeRoles("admin"), deleteCourse);
-courseRouter.get("/get-course-content/:id", isAuthenticated, authorizeRoles("admin"), getSingleCourseForAdmin);
+courseRouter.get("/get-all-courses", updateAccessToken, isAuthenticated, authorizeRoles("admin"), getAllCoursesForAdmin);
+courseRouter.delete("/delete-course/:id", updateAccessToken, isAuthenticated, authorizeRoles("admin"), deleteCourse);
+courseRouter.get("/get-course-content/:id", updateAccessToken, isAuthenticated, authorizeRoles("admin"), getSingleCourseForAdmin);
 
 
 export default courseRouter

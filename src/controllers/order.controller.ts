@@ -100,7 +100,6 @@ export const createOrder = asyncHandler(async (req: Request & {user: IUser}, res
         await redis.set(course._id, JSON.stringify(course))
 
         newOrder(data, res, next)
-
         
     } catch (error) {
         return next(new ErrorHandler(error.message, 500))

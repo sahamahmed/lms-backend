@@ -178,6 +178,26 @@ export const getSingleCourseForUser = asyncHandler(async (req: Request & { user:
 })
 
 
+//GET MY COURSES
+export const getMyCourses = asyncHandler(async (req: Request & { user: IUser }, res: Response, next: NextFunction) => {
+    try {
+        const userCourses = req.user.courses
+        const courses = await Course.find({
+            _id: {
+                $in: userCourses.map((course) => course.courseId)
+            }
+        })
+
+        res.status(200).json({
+            success: true,
+            courses,
+        })
+    } catch (error) {
+        return next(new ErrorHandler(error.message, 500))
+    }
+})
+
+
 //ADD QUESTIONS TO A COURSE
 interface IAddQuestionData{
     question: string

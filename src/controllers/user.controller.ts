@@ -214,10 +214,7 @@ export const logoutUser = asyncHandler(async (req: Request & { user: IUser }, re
       res.cookie("refresh_token", refreshToken, refreshTokenOptions);
       redis.set(user._id, JSON.stringify(user), "EX" , 604800)
     
-      res.status(200).json({
-        success: true,
-        accessToken,
-      });
+      next()
     } catch (error:any) {
       return next(new ErrorHandler(error.message, 500));
     }
